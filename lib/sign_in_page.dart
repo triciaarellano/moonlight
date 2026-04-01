@@ -14,6 +14,23 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  String errorMessage = '';
+
+  void signIn() {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      setState(() {
+        errorMessage = 'Please fill in all fields.';
+      });
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomePage(email: emailController.text),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,20 +43,19 @@ class _SignInPageState extends State<SignInPage> {
             TextField(
               controller: emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
             ),
             TextField(
               controller: passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
+            if (errorMessage.isNotEmpty)
+              Text(errorMessage, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomePage()),
-                );
-              },
+              onPressed: signIn,
               child: const Text('Sign In'),
             ),
             TextButton(
