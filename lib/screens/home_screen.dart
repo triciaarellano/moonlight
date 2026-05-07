@@ -112,10 +112,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         padding: const EdgeInsets.all(16),
-                        child: CalendarWidget(
-                          selectedDate: _selectedDate,
-                          onDateSelected: (date) =>
-                              setState(() => _selectedDate = date),
+                        child: StreamBuilder<List<ScheduleItem>>(
+                          stream: _firestoreService.getScheduleItems(),
+                          builder: (context, snapshot) {
+                            // Extract days that have schedules
+                            final daysWithSchedule = <int>{};
+                            if (snapshot.hasData) {
+                              for (var item in snapshot.data!) {
+                                daysWithSchedule.add(item.day);
+                              }
+                            }
+
+                            return CalendarWidget(
+                              selectedDate: _selectedDate,
+                              onDateSelected: (date) =>
+                                  setState(() => _selectedDate = date),
+                              daysWithSchedule: daysWithSchedule.toList(),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -155,9 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text(
-                                'Today',
-                                style: TextStyle(
+                              child: Text(
+                                _selectedDate.day == DateTime.now().day &&
+                                        _selectedDate.month ==
+                                            DateTime.now().month &&
+                                        _selectedDate.year ==
+                                            DateTime.now().year
+                                    ? 'Today'
+                                    : '${_selectedDate.month}/${_selectedDate.day}',
+                                style: const TextStyle(
                                   color: Color(0xFF7C5FDD),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -202,7 +222,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             final scheduleItems = snapshot.data ?? [];
 
-                            if (scheduleItems.isEmpty) {
+                            // Filter items for selected date
+                            final itemsForSelectedDate = scheduleItems
+                                .where((item) => item.day == _selectedDate.day)
+                                .toList();
+
+                            if (itemsForSelectedDate.isEmpty) {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 24, horizontal: 16),
@@ -216,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        'No schedule items yet',
+                                        'No schedule items for this date',
                                         style: TextStyle(
                                           color: Colors.grey[400],
                                           fontSize: 13,
@@ -237,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
 
                             return Column(
-                              children: scheduleItems.take(3).map((item) {
+                              children: itemsForSelectedDate.map((item) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
                                   child: ScheduleItemWidget(

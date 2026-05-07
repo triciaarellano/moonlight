@@ -4,11 +4,13 @@ import 'dart:async';
 class CalendarWidget extends StatefulWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
+  final List<int> daysWithSchedule;
 
   const CalendarWidget({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
+    this.daysWithSchedule = const [],
   });
 
   @override
@@ -17,7 +19,7 @@ class CalendarWidget extends StatefulWidget {
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   late Timer _timer;
-  late DateTime _displayedMonth; // Track which month to display
+  late DateTime _displayedMonth;
 
   @override
   void initState() {
@@ -170,16 +172,39 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         : null,
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    displayDay.toString(),
-                    style: TextStyle(
-                      color: !isCurrentMonth
-                          ? Colors.grey.shade700
-                          : (index % 7 == 0 ? Colors.red[300] : Colors.white),
-                      fontSize: 13,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Text(
+                        displayDay.toString(),
+                        style: TextStyle(
+                          color: !isCurrentMonth
+                              ? Colors.grey.shade700
+                              : (index % 7 == 0
+                                  ? Colors.red[300]
+                                  : Colors.white),
+                          fontSize: 13,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      // Dot indicator for days with schedule
+                      if (isCurrentMonth &&
+                          widget.daysWithSchedule.contains(dayNum))
+                        Positioned(
+                          bottom: 2,
+                          child: Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFFB5A957),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ));
           },

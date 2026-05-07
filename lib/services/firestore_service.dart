@@ -52,6 +52,8 @@ class Note {
   final String content;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? noteDate;
+  final String? noteTime;
 
   Note({
     required this.id,
@@ -59,6 +61,8 @@ class Note {
     required this.content,
     required this.createdAt,
     required this.updatedAt,
+    this.noteDate,
+    this.noteTime,
   });
 
   factory Note.fromFirestore(DocumentSnapshot doc) {
@@ -69,6 +73,8 @@ class Note {
       content: data['content'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      noteDate: (data['noteDate'] as Timestamp?)?.toDate(),
+      noteTime: data['noteTime'],
     );
   }
 
@@ -78,6 +84,8 @@ class Note {
       'content': content,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'noteDate': noteDate,
+      'noteTime': noteTime,
     };
   }
 }
