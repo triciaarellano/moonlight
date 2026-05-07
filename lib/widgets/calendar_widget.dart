@@ -5,12 +5,18 @@ class CalendarWidget extends StatefulWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
   final List<int> daysWithSchedule;
+  final List<int> daysWithNotes;
+  final Map<int, List<String>> schedulesByDay;
+  final Map<int, List<String>> notesByDay;
 
   const CalendarWidget({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
     this.daysWithSchedule = const [],
+    this.daysWithNotes = const [],
+    this.schedulesByDay = const {},
+    this.notesByDay = const {},
   });
 
   @override
@@ -172,8 +178,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         : null,
                   ),
                   alignment: Alignment.center,
-                  child: Stack(
-                    alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         displayDay.toString(),
@@ -188,19 +195,52 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               isSelected ? FontWeight.w700 : FontWeight.w500,
                         ),
                       ),
-                      // Dot indicator for days with schedule
+                      const SizedBox(height: 2),
+                      // Display schedule titles for this day
                       if (isCurrentMonth &&
-                          widget.daysWithSchedule.contains(dayNum))
-                        Positioned(
-                          bottom: 2,
-                          child: Container(
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFFB5A957),
+                          widget.schedulesByDay.containsKey(dayNum))
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: (widget.schedulesByDay[dayNum] ?? [])
+                                  .take(2)
+                                  .map((title) => Text(
+                                        title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Color(0xFFB5A957),
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      // Display note titles for this day
+                      if (isCurrentMonth &&
+                          widget.notesByDay.containsKey(dayNum))
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: (widget.notesByDay[dayNum] ?? [])
+                                  .take(2)
+                                  .map((title) => Text(
+                                        title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Color(0xFF7C5FDD),
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                           ),
                         ),

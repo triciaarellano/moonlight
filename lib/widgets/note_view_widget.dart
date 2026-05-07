@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './calendar_widget.dart';
+import '../services/firestore_service.dart';
 
 class NoteViewWidget extends StatefulWidget {
   final VoidCallback onAddNotePressed;
@@ -31,9 +32,30 @@ class _NoteViewWidgetState extends State<NoteViewWidget> {
           ),
         ),
         padding: const EdgeInsets.all(16),
-        child: CalendarWidget(
-          selectedDate: widget.selectedDate,
-          onDateSelected: widget.onDateSelected,
+        child: StreamBuilder<List<Note>>(
+          stream: FirestoreService().getNotes(),
+          builder: (context, snapshot) {
+            // Extract days that have notes with their titles
+            final daysWithNotes = <int>{};
+            final notesByDay = <int, List<String>>{};
+            if (snapshot.hasData) {
+              for (var note in snapshot.data!) {
+                if (note.noteDate != null) {
+                  daysWithNotes.add(note.noteDate!.day);
+                  notesByDay
+                      .putIfAbsent(note.noteDate!.day, () => [])
+                      .add(note.title);
+                }
+              }
+            }
+
+            return CalendarWidget(
+              selectedDate: widget.selectedDate,
+              onDateSelected: widget.onDateSelected,
+              daysWithNotes: daysWithNotes.toList(),
+              notesByDay: notesByDay,
+            );
+          },
         ),
       ),
     );

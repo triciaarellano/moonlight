@@ -56,15 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           children: [
-                            Container(
+                            Image.asset(
+                              'assets/Logo.png',
                               width: 28,
                               height: 28,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFB5A957),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Icon(Icons.nights_stay,
-                                  color: Colors.white, size: 16),
                             ),
                             const SizedBox(width: 10),
                             const Text(
@@ -115,11 +110,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: StreamBuilder<List<ScheduleItem>>(
                           stream: _firestoreService.getScheduleItems(),
                           builder: (context, snapshot) {
-                            // Extract days that have schedules
                             final daysWithSchedule = <int>{};
+                            final schedulesByDay = <int, List<String>>{};
                             if (snapshot.hasData) {
                               for (var item in snapshot.data!) {
                                 daysWithSchedule.add(item.day);
+                                schedulesByDay
+                                    .putIfAbsent(item.day, () => [])
+                                    .add(item.title);
                               }
                             }
 
@@ -128,6 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               onDateSelected: (date) =>
                                   setState(() => _selectedDate = date),
                               daysWithSchedule: daysWithSchedule.toList(),
+                              schedulesByDay: schedulesByDay,
                             );
                           },
                         ),
