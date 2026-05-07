@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
+import 'screens/auth_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables from .env file
+  await dotenv.load(fileName: ".env");
+  
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
@@ -31,7 +38,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFF2B125A),
       ),
-      home: const SplashScreen(),
+      home: const _HomeRouter(),
     );
+  }
+}
+
+class _HomeRouter extends StatelessWidget {
+  const _HomeRouter();
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return const AuthScreen();
+    }
+    return const SplashScreen();
   }
 }

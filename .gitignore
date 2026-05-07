@@ -46,3 +46,5 @@ app.*.map.json
 
 # Firebase environment secrets
 .env.json
+.env
+.env.local
