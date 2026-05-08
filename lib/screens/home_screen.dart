@@ -6,6 +6,7 @@ import '../widgets/schedule_item_widget.dart';
 import '../widgets/note_view_widget.dart';
 import '../widgets/create_schedule_modal.dart';
 import '../services/firestore_service.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -260,20 +261,95 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             }
 
+                            // Separate items by time of day
+                            final morningItems = itemsForSelectedDate
+                                .where((item) => item.timeOfDay == 'morning')
+                                .toList();
+                            final eveningItems = itemsForSelectedDate
+                                .where((item) => item.timeOfDay == 'evening')
+                                .toList();
+
                             return Column(
-                              children: itemsForSelectedDate.map((item) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: ScheduleItemWidget(
-                                    day: item.day,
-                                    title: item.title,
-                                    time: item.time,
-                                    place: item.place,
-                                    notes: item.notes,
-                                    isCompleted: item.isCompleted,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Morning Section
+                                if (morningItems.isNotEmpty) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.wb_sunny,
+                                          color: Colors.amber[300],
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'Morning',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                );
-                              }).toList(),
+                                  ...morningItems.map((item) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 12),
+                                      child: ScheduleItemWidget(
+                                        day: item.day,
+                                        title: item.title,
+                                        time: item.time,
+                                        place: item.place,
+                                        notes: item.notes,
+                                        isCompleted: item.isCompleted,
+                                      ),
+                                    );
+                                  }),
+                                  const SizedBox(height: 8),
+                                ],
+                                // Evening Section
+                                if (eveningItems.isNotEmpty) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.nights_stay,
+                                          color: Colors.indigo[300],
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'Evening',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ...eveningItems.map((item) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 12),
+                                      child: ScheduleItemWidget(
+                                        day: item.day,
+                                        title: item.title,
+                                        time: item.time,
+                                        place: item.place,
+                                        notes: item.notes,
+                                        isCompleted: item.isCompleted,
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ],
                             );
                           },
                         ),
@@ -320,6 +396,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
             },
           ),
           ListTile(

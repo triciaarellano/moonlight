@@ -10,6 +10,7 @@ class ScheduleItem {
   final String place;
   final String notes;
   final bool isCompleted;
+  final String timeOfDay; // 'morning' or 'evening'
 
   ScheduleItem({
     required this.id,
@@ -19,6 +20,7 @@ class ScheduleItem {
     required this.place,
     required this.notes,
     required this.isCompleted,
+    this.timeOfDay = 'morning',
   });
 
   factory ScheduleItem.fromFirestore(DocumentSnapshot doc) {
@@ -31,6 +33,7 @@ class ScheduleItem {
       place: data['place'] ?? '',
       notes: data['notes'] ?? '',
       isCompleted: data['isCompleted'] ?? false,
+      timeOfDay: data['timeOfDay'] ?? 'morning',
     );
   }
 
@@ -42,6 +45,7 @@ class ScheduleItem {
       'place': place,
       'notes': notes,
       'isCompleted': isCompleted,
+      'timeOfDay': timeOfDay,
     };
   }
 }
@@ -209,5 +213,100 @@ class FirestoreService {
         .collection('notes')
         .doc(noteId)
         .delete();
+  }
+
+  // Job Time Slot methods
+  Stream<List<JobTimeSlot>> getJobTimeSlots() {
+    if (_userId.isEmpty) {
+      return Stream.value([]);
+    }
+
+    try {
+      return _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('jobTimeSlots')
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => JobTimeSlot.fromFirestore(doc))
+              .toList())
+          .handleError((error) {
+        if (kDebugMode) {
+          print('Error fetching job time slots: $error');
+        }
+        return <JobTimeSlot>[];
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in getJobTimeSlots: $e');
+      }
+      return Stream.value([]);
+    }
+  }
+
+  Future<void> addJobTimeSlot(JobTimeSlot slot) {
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('jobTimeSlots')
+        .add(slot.toMap());
+  }
+
+  Future<void> updateJobTimeSlot(JobTimeSlot slot) {
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('jobTimeSlots')
+        .doc(slot.id)
+        .update(slot.toMap());
+  }
+
+  Future<void> deleteJobTimeSlot(String slotId) {
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('jobTimeSlots')
+        .doc(slotId)
+        .delete();
+  }
+}
+
+class JobTimeSlot {
+  final String id;
+  final String jobName; // e.g., 'Job 1', 'Job 2'
+  final String timeOfDay; // 'morning' or 'evening'
+  final String startTime;
+  final String endTime;
+  final String notes;
+
+  JobTimeSlot({
+    required this.id,
+    required this.jobName,
+    required this.timeOfDay,
+    required this.startTime,
+    required this.endTime,
+    required this.notes,
+  });
+
+  factory JobTimeSlot.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return JobTimeSlot(
+      id: doc.id,
+      jobName: data['jobName'] ?? 'Job',
+      timeOfDay: data['timeOfDay'] ?? 'morning',
+      startTime: data['startTime'] ?? '',
+      endTime: data['endTime'] ?? '',
+      notes: data['notes'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'jobName': jobName,
+      'timeOfDay': timeOfDay,
+      'startTime': startTime,
+      'endTime': endTime,
+      'notes': notes,
+    };
   }
 }

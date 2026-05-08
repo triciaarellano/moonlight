@@ -21,6 +21,7 @@ class _CreateScheduleModalState extends State<CreateScheduleModal> {
   bool _isCompleted = false;
   bool _isLoading = false;
   String _createType = 'schedule'; // 'schedule' or 'note'
+  String _timeOfDay = 'morning'; // 'morning' or 'evening'
 
   @override
   void initState() {
@@ -157,6 +158,7 @@ class _CreateScheduleModalState extends State<CreateScheduleModal> {
             place: _placeController.text,
             notes: _notesController.text,
             isCompleted: _isCompleted,
+            timeOfDay: _timeOfDay,
           );
 
           await firestoreService.addScheduleItem(scheduleItem);
@@ -519,6 +521,125 @@ class _CreateScheduleModalState extends State<CreateScheduleModal> {
                             ),
                             filled: true,
                             fillColor: const Color(0xFF1C0A4A),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Time of Day Selection (Morning/Evening) - schedule only
+                      if (_createType == 'schedule') ...[
+                        const Text(
+                          'Time of Day',
+                          style: TextStyle(
+                            color: Color(0xFFB5A957),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1C0A4A),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFF7C5FDD)
+                                  .withValues(alpha: 0.3),
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _timeOfDay = 'morning';
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      color: _timeOfDay == 'morning'
+                                          ? const Color(0xFF7C5FDD)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.wb_sunny,
+                                          color: _timeOfDay == 'morning'
+                                              ? Colors.white
+                                              : Colors.grey,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Morning',
+                                          style: TextStyle(
+                                            color: _timeOfDay == 'morning'
+                                                ? Colors.white
+                                                : Colors.grey,
+                                            fontWeight: _timeOfDay == 'morning'
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _timeOfDay = 'evening';
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      color: _timeOfDay == 'evening'
+                                          ? const Color(0xFF7C5FDD)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.nights_stay,
+                                          color: _timeOfDay == 'evening'
+                                              ? Colors.white
+                                              : Colors.grey,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Evening',
+                                          style: TextStyle(
+                                            color: _timeOfDay == 'evening'
+                                                ? Colors.white
+                                                : Colors.grey,
+                                            fontWeight: _timeOfDay == 'evening'
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 16),
