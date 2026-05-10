@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/calendar_widget.dart';
 import '../widgets/tab_navigation_widget.dart';
-import '../widgets/schedule_item_widget.dart';
 import '../widgets/note_view_widget.dart';
 import '../widgets/create_schedule_modal.dart';
 import '../services/firestore_service.dart';
@@ -141,221 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           setState(() => _selectedDate = date),
                       onAddNotePressed: () {},
                     ),
-                  // Schedule Items Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Schedule',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF7C5FDD)
-                                    .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                _selectedDate.day == DateTime.now().day &&
-                                        _selectedDate.month ==
-                                            DateTime.now().month &&
-                                        _selectedDate.year ==
-                                            DateTime.now().year
-                                    ? 'Today'
-                                    : '${_selectedDate.month}/${_selectedDate.day}',
-                                style: const TextStyle(
-                                  color: Color(0xFF7C5FDD),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        StreamBuilder<List<ScheduleItem>>(
-                          stream: _firestoreService.getScheduleItems(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const SizedBox(
-                                height: 100,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation(
-                                        Color(0xFF7C5FDD)),
-                                  ),
-                                ),
-                              );
-                            }
-
-                            if (snapshot.hasError) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 16, horizontal: 10),
-                                child: Center(
-                                  child: Text(
-                                    'Error loading schedule: ${snapshot.error}',
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 12,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final scheduleItems = snapshot.data ?? [];
-
-                            // Filter items for selected date
-                            final itemsForSelectedDate = scheduleItems
-                                .where((item) => item.day == _selectedDate.day)
-                                .toList();
-
-                            if (itemsForSelectedDate.isEmpty) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 24, horizontal: 16),
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        Icons.event_busy,
-                                        color: Colors.grey[600],
-                                        size: 32,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'No schedule items for this date',
-                                        style: TextStyle(
-                                          color: Colors.grey[400],
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Tap the + button to create one',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-
-                            // Separate items by time of day
-                            final morningItems = itemsForSelectedDate
-                                .where((item) => item.timeOfDay == 'morning')
-                                .toList();
-                            final eveningItems = itemsForSelectedDate
-                                .where((item) => item.timeOfDay == 'evening')
-                                .toList();
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Morning Section
-                                if (morningItems.isNotEmpty) ...[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.wb_sunny,
-                                          color: Colors.amber[300],
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Morning',
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ...morningItems.map((item) {
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12),
-                                      child: ScheduleItemWidget(
-                                        day: item.day,
-                                        title: item.title,
-                                        time: item.time,
-                                        place: item.place,
-                                        notes: item.notes,
-                                        isCompleted: item.isCompleted,
-                                      ),
-                                    );
-                                  }),
-                                  const SizedBox(height: 8),
-                                ],
-                                // Evening Section
-                                if (eveningItems.isNotEmpty) ...[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.nights_stay,
-                                          color: Colors.indigo[300],
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Evening',
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ...eveningItems.map((item) {
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12),
-                                      child: ScheduleItemWidget(
-                                        day: item.day,
-                                        title: item.title,
-                                        time: item.time,
-                                        place: item.place,
-                                        notes: item.notes,
-                                        isCompleted: item.isCompleted,
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -365,11 +149,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showModalBottomSheet(
+          showDialog<void>(
             context: context,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            builder: (context) => const CreateScheduleModal(),
+            builder: (context) => Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: const CreateScheduleModal(),
+              ),
+            ),
           );
         },
         backgroundColor: const Color(0xFF7C5FDD),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -5,22 +7,20 @@ import 'package:flutter/foundation.dart';
 class ScheduleItem {
   final String id;
   final int day;
+  final String jobName;
   final String title;
-  final String time;
   final String place;
   final String notes;
   final bool isCompleted;
-  final String timeOfDay; // 'morning' or 'evening'
 
   ScheduleItem({
     required this.id,
     required this.day,
+    this.jobName = '',
     required this.title,
-    required this.time,
     required this.place,
     required this.notes,
     required this.isCompleted,
-    this.timeOfDay = 'morning',
   });
 
   factory ScheduleItem.fromFirestore(DocumentSnapshot doc) {
@@ -28,30 +28,29 @@ class ScheduleItem {
     return ScheduleItem(
       id: doc.id,
       day: data['day'] ?? 0,
+      jobName: data['jobName'] ?? '',
       title: data['title'] ?? '',
-      time: data['time'] ?? '',
       place: data['place'] ?? '',
       notes: data['notes'] ?? '',
       isCompleted: data['isCompleted'] ?? false,
-      timeOfDay: data['timeOfDay'] ?? 'morning',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'day': day,
+      'jobName': jobName,
       'title': title,
-      'time': time,
       'place': place,
       'notes': notes,
       'isCompleted': isCompleted,
-      'timeOfDay': timeOfDay,
     };
   }
 }
 
 class Note {
   final String id;
+  final String jobName;
   final String title;
   final String content;
   final DateTime createdAt;
@@ -61,6 +60,7 @@ class Note {
 
   Note({
     required this.id,
+    this.jobName = '',
     required this.title,
     required this.content,
     required this.createdAt,
@@ -73,6 +73,7 @@ class Note {
     final data = doc.data() as Map<String, dynamic>;
     return Note(
       id: doc.id,
+      jobName: data['jobName'] ?? '',
       title: data['title'] ?? '',
       content: data['content'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -84,6 +85,7 @@ class Note {
 
   Map<String, dynamic> toMap() {
     return {
+      'jobName': jobName,
       'title': title,
       'content': content,
       'createdAt': createdAt,
@@ -200,6 +202,7 @@ class FirestoreService {
         .collection('notes')
         .doc(note.id)
         .update({
+      'jobName': note.jobName,
       'title': note.title,
       'content': note.content,
       'updatedAt': note.updatedAt,
@@ -230,12 +233,16 @@ class FirestoreService {
           .map((snapshot) => snapshot.docs
               .map((doc) => JobTimeSlot.fromFirestore(doc))
               .toList())
-          .handleError((error) {
-        if (kDebugMode) {
-          print('Error fetching job time slots: $error');
-        }
-        return <JobTimeSlot>[];
-      });
+          .transform(
+        StreamTransformer<List<JobTimeSlot>, List<JobTimeSlot>>.fromHandlers(
+          handleError: (error, stackTrace, sink) {
+            if (kDebugMode) {
+              print('Error fetching job time slots: $error');
+            }
+            sink.add(const <JobTimeSlot>[]);
+          },
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('Error in getJobTimeSlots: $e');

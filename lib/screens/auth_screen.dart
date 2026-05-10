@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/input_fields.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -85,6 +86,10 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authBorderColor = Colors.white.withValues(alpha: 0.2);
+    final authHintColor = Colors.white.withValues(alpha: 0.5);
+    final authFillColor = Colors.white.withValues(alpha: 0.1);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0118),
       body: SizedBox.expand(
@@ -134,57 +139,25 @@ class _AuthScreenState extends State<AuthScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: TextField(
+                          child: InputFields(
                             controller: firstNameController,
-                            decoration: InputDecoration(
-                              hintText: 'First Name',
-                              hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.5),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.1),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                ),
-                              ),
-                            ),
-                            style: const TextStyle(color: Colors.white),
+                            hintText: 'First Name',
+                            hintColor: authHintColor,
+                            fillColor: authFillColor,
+                            borderColor: authBorderColor,
+                            borderRadius: 12,
                             textCapitalization: TextCapitalization.words,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: TextField(
+                          child: InputFields(
                             controller: lastNameController,
-                            decoration: InputDecoration(
-                              hintText: 'Last Name',
-                              hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.5),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.1),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                ),
-                              ),
-                            ),
-                            style: const TextStyle(color: Colors.white),
+                            hintText: 'Last Name',
+                            hintColor: authHintColor,
+                            fillColor: authFillColor,
+                            borderColor: authBorderColor,
+                            borderRadius: 12,
                             textCapitalization: TextCapitalization.words,
                           ),
                         ),
@@ -193,85 +166,37 @@ class _AuthScreenState extends State<AuthScreen> {
                     const SizedBox(height: 16),
                   ],
                   // Email field
-                  TextField(
+                  InputFields(
                     controller: emailController,
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.2),
-                        ),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
+                    hintText: 'Email',
+                    hintColor: authHintColor,
+                    fillColor: authFillColor,
+                    borderColor: authBorderColor,
+                    borderRadius: 12,
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
                   // Password field
-                  TextField(
+                  InputFields(
                     controller: passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: 'Password',
-                      hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.2),
-                        ),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
+                    hintText: 'Password',
+                    hintColor: authHintColor,
+                    fillColor: authFillColor,
+                    borderColor: authBorderColor,
+                    borderRadius: 12,
                   ),
                   const SizedBox(height: 16),
                   // Confirm Password field (only for Sign Up)
                   if (!isSignIn) ...[
-                    TextField(
+                    InputFields(
                       controller: confirmPasswordController,
                       obscureText: true,
-                      decoration: InputDecoration(
-                        hintText: 'Confirm Password',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white.withValues(alpha: 0.1),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
-                        ),
-                      ),
-                      style: const TextStyle(color: Colors.white),
+                      hintText: 'Confirm Password',
+                      hintColor: authHintColor,
+                      fillColor: authFillColor,
+                      borderColor: authBorderColor,
+                      borderRadius: 12,
                     ),
                     const SizedBox(height: 16),
                   ],

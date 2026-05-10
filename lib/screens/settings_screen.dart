@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firestore_service.dart';
+import '../widgets/input_fields.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -523,23 +524,11 @@ class _JobTimeSlotModalState extends State<_JobTimeSlotModal> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextField(
+                  InputFields(
                     controller: _jobNameController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'e.g., Job 1, Job 2',
-                      hintStyle: TextStyle(color: Colors.grey[500]),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF7C5FDD)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFFB5A957)),
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF1C0A4A),
-                    ),
+                    hintText: 'e.g., Job 1, Job 2',
+                    hintColor: Colors.grey.shade500,
+                    focusedBorderColor: const Color(0xFFB5A957),
                   ),
                   const SizedBox(height: 16),
 
@@ -755,24 +744,12 @@ class _JobTimeSlotModalState extends State<_JobTimeSlotModal> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextField(
+                  InputFields(
                     controller: _notesController,
                     maxLines: 3,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Add notes for this time slot',
-                      hintStyle: TextStyle(color: Colors.grey[500]),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF7C5FDD)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFFB5A957)),
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF1C0A4A),
-                    ),
+                    hintText: 'Add notes for this time slot',
+                    hintColor: Colors.grey.shade500,
+                    focusedBorderColor: const Color(0xFFB5A957),
                   ),
                   const SizedBox(height: 24),
 

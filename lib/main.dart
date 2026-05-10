@@ -11,20 +11,17 @@ import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await dotenv.load(fileName: ".env");
-  
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    }
-  } catch (_) {}
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -55,9 +52,8 @@ class _HomeRouter extends StatelessWidget {
   Widget build(BuildContext context) {
     // Check if user is already logged in
     final user = FirebaseAuth.instance.currentUser;
-    
+
     if (kIsWeb) {
-      // On web, show home if user exists, otherwise auth
       return user != null ? const HomeScreen() : const AuthScreen();
     }
     return const SplashScreen();
