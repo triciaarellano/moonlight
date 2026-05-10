@@ -4,6 +4,7 @@ import '../widgets/calendar_widget.dart';
 import '../widgets/tab_navigation_widget.dart';
 import '../widgets/note_view_widget.dart';
 import '../widgets/create_schedule_modal.dart';
+import '../widgets/user_initials_logo_button.dart';
 import '../services/firestore_service.dart';
 import 'settings_screen.dart';
 
@@ -71,12 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert,
-                            color: Colors.white, size: 22),
+                      UserInitialsLogoButton(
+                        displayName: FirebaseAuth.instance.currentUser?.displayName,
                         onPressed: () => _showMenu(context),
-                        padding: const EdgeInsets.all(4),
-                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
