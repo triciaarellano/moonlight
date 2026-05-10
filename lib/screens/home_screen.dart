@@ -44,105 +44,103 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           child: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset(
-                              'assets/Logo.png',
-                              width: 28,
-                              height: 28,
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/Logo.png',
+                            width: 28,
+                            height: 28,
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'moonlight.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(width: 10),
-                            const Text(
-                              'moonlight.',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.more_vert,
+                            color: Colors.white, size: 22),
+                        onPressed: () => _showMenu(context),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+                // Tab Navigation
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: TabNavigationWidget(
+                    selectedIndex: _selectedTabIndex,
+                    onTabSelected: (index) =>
+                        setState(() => _selectedTabIndex = index),
+                  ),
+                ),
+                Expanded(
+                  child: _selectedTabIndex == 0
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 16),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1C0A4A)
+                                  .withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF7C5FDD)
+                                    .withValues(alpha: 0.3),
                               ),
                             ),
-                          ],
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.more_vert,
-                              color: Colors.white, size: 22),
-                          onPressed: () => _showMenu(context),
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Tab Navigation
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: TabNavigationWidget(
-                      selectedIndex: _selectedTabIndex,
-                      onTabSelected: (index) =>
-                          setState(() => _selectedTabIndex = index),
-                    ),
-                  ),
-                  // Calendar View
-                  if (_selectedTabIndex == 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1C0A4A).withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color:
-                                const Color(0xFF7C5FDD).withValues(alpha: 0.3),
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        child: StreamBuilder<List<ScheduleItem>>(
-                          stream: _firestoreService.getScheduleItems(),
-                          builder: (context, snapshot) {
-                            final daysWithSchedule = <int>{};
-                            final schedulesByDay = <int, List<String>>{};
-                            if (snapshot.hasData) {
-                              for (var item in snapshot.data!) {
-                                daysWithSchedule.add(item.day);
-                                schedulesByDay
-                                    .putIfAbsent(item.day, () => [])
-                                    .add(item.title);
-                              }
-                            }
+                            padding: const EdgeInsets.all(16),
+                            child: StreamBuilder<List<ScheduleItem>>(
+                              stream: _firestoreService.getScheduleItems(),
+                              builder: (context, snapshot) {
+                                final daysWithSchedule = <int>{};
+                                final schedulesByDay = <int, List<String>>{};
+                                if (snapshot.hasData) {
+                                  for (var item in snapshot.data!) {
+                                    daysWithSchedule.add(item.day);
+                                    schedulesByDay
+                                        .putIfAbsent(item.day, () => [])
+                                        .add(item.title);
+                                  }
+                                }
 
-                            return CalendarWidget(
-                              selectedDate: _selectedDate,
-                              onDateSelected: (date) =>
-                                  setState(() => _selectedDate = date),
-                              daysWithSchedule: daysWithSchedule.toList(),
-                              schedulesByDay: schedulesByDay,
-                            );
-                          },
+                                return CalendarWidget(
+                                  selectedDate: _selectedDate,
+                                  onDateSelected: (date) =>
+                                      setState(() => _selectedDate = date),
+                                  daysWithSchedule: daysWithSchedule.toList(),
+                                  schedulesByDay: schedulesByDay,
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      : NoteViewWidget(
+                          selectedDate: _selectedDate,
+                          onDateSelected: (date) =>
+                              setState(() => _selectedDate = date),
+                          onAddNotePressed: () {},
                         ),
-                      ),
-                    ),
-                  // Note View
-                  if (_selectedTabIndex == 1)
-                    NoteViewWidget(
-                      selectedDate: _selectedDate,
-                      onDateSelected: (date) =>
-                          setState(() => _selectedDate = date),
-                      onAddNotePressed: () {},
-                    ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
         ),

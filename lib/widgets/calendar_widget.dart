@@ -77,7 +77,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Month/Year header with navigation
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -110,7 +109,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ],
         ),
         const SizedBox(height: 12),
-        // Weekday headers
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: const [
@@ -124,130 +122,149 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ],
         ),
         const SizedBox(height: 10),
-        // Calendar grid
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.3,
-          ),
-          itemCount: 42,
-          itemBuilder: (context, index) {
-            final dayNum = index - firstDayWeekday + 2;
-            final isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
-            final displayDay = isCurrentMonth
-                ? dayNum
-                : (dayNum > daysInMonth
-                    ? dayNum - daysInMonth
-                    : dayNum +
-                        DateTime(_displayedMonth.year, _displayedMonth.month, 0)
-                            .day);
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const crossSpacing = 10.0;
+              const mainSpacing = 10.0;
+              final usableWidth = constraints.maxWidth - (crossSpacing * 6);
+              final usableHeight = constraints.maxHeight - (mainSpacing * 5);
+              final cellWidth = usableWidth / 7;
+              final cellHeight = usableHeight / 6;
+              final childAspectRatio =
+                  cellWidth / cellHeight.clamp(1.0, 1000.0);
+              final showEventText = cellHeight >= 44;
 
-            final isToday = isCurrentMonth &&
-                dayNum == now.day &&
-                _displayedMonth.month == now.month &&
-                _displayedMonth.year == now.year;
+              return GridView.builder(
+                padding: EdgeInsets.zero,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: mainSpacing,
+                  crossAxisSpacing: crossSpacing,
+                  childAspectRatio: childAspectRatio,
+                ),
+                itemCount: 42,
+                itemBuilder: (context, index) {
+                  final dayNum = index - firstDayWeekday + 2;
+                  final isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
+                  final displayDay = isCurrentMonth
+                      ? dayNum
+                      : (dayNum > daysInMonth
+                          ? dayNum - daysInMonth
+                          : dayNum +
+                              DateTime(
+                                _displayedMonth.year,
+                                _displayedMonth.month,
+                                0,
+                              ).day);
 
-            final isSelected = isCurrentMonth &&
-                dayNum == widget.selectedDate.day &&
-                _displayedMonth.month == widget.selectedDate.month &&
-                _displayedMonth.year == widget.selectedDate.year;
+                  final isToday = isCurrentMonth &&
+                      dayNum == now.day &&
+                      _displayedMonth.month == now.month &&
+                      _displayedMonth.year == now.year;
 
-            return GestureDetector(
-                onTap: isCurrentMonth
-                    ? () => widget.onDateSelected(DateTime(
-                        _displayedMonth.year, _displayedMonth.month, dayNum))
-                    : null,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSelected
-                        ? const Color(0xFF7C5FDD)
-                        : (isToday
-                            ? const Color(0xFF7C5FDD).withValues(alpha: 0.25)
-                            : Colors.transparent),
-                    border: isToday && !isSelected
-                        ? Border.all(
-                            color:
-                                const Color(0xFF7C5FDD).withValues(alpha: 0.5),
-                            width: 1.5,
-                          )
+                  final isSelected = isCurrentMonth &&
+                      dayNum == widget.selectedDate.day &&
+                      _displayedMonth.month == widget.selectedDate.month &&
+                      _displayedMonth.year == widget.selectedDate.year;
+
+                  final scheduleTitles = isCurrentMonth
+                      ? (widget.schedulesByDay[dayNum] ?? const <String>[])
+                      : const <String>[];
+                  final noteTitles = isCurrentMonth
+                      ? (widget.notesByDay[dayNum] ?? const <String>[])
+                      : const <String>[];
+                  final hasSchedule = isCurrentMonth &&
+                      (scheduleTitles.isNotEmpty ||
+                          widget.daysWithSchedule.contains(dayNum));
+                  final hasNotes = isCurrentMonth &&
+                      (noteTitles.isNotEmpty ||
+                          widget.daysWithNotes.contains(dayNum));
+
+                  return GestureDetector(
+                    onTap: isCurrentMonth
+                        ? () => widget.onDateSelected(
+                              DateTime(
+                                _displayedMonth.year,
+                                _displayedMonth.month,
+                                dayNum,
+                              ),
+                            )
                         : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        displayDay.toString(),
-                        style: TextStyle(
-                          color: !isCurrentMonth
-                              ? Colors.grey.shade700
-                              : (index % 7 == 0
-                                  ? Colors.red[300]
-                                  : Colors.white),
-                          fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w500,
-                        ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isSelected
+                            ? const Color(0xFF7C5FDD)
+                            : (isToday
+                                ? const Color(0xFF7C5FDD)
+                                    .withValues(alpha: 0.25)
+                                : Colors.transparent),
+                        border: isToday && !isSelected
+                            ? Border.all(
+                                color: const Color(0xFF7C5FDD)
+                                    .withValues(alpha: 0.5),
+                                width: 1.5,
+                              )
+                            : null,
                       ),
-                      const SizedBox(height: 2),
-                      // Display schedule titles for this day
-                      if (isCurrentMonth &&
-                          widget.schedulesByDay.containsKey(dayNum))
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: (widget.schedulesByDay[dayNum] ?? [])
-                                  .take(2)
-                                  .map((title) => Text(
-                                        title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Color(0xFFB5A957),
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ))
-                                  .toList(),
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            displayDay.toString(),
+                            style: TextStyle(
+                              color: !isCurrentMonth
+                                  ? Colors.grey.shade700
+                                  : (index % 7 == 0
+                                      ? Colors.red[300]
+                                      : Colors.white),
+                              fontSize: 13,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                             ),
                           ),
-                        ),
-                      // Display note titles for this day
-                      if (isCurrentMonth &&
-                          widget.notesByDay.containsKey(dayNum))
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: (widget.notesByDay[dayNum] ?? [])
-                                  .take(2)
-                                  .map((title) => Text(
-                                        title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Color(0xFF7C5FDD),
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ));
-          },
+                          if (showEventText) ...[
+                            const SizedBox(height: 2),
+                            if (hasSchedule)
+                              ...scheduleTitles.take(1).map(
+                                    (title) => Text(
+                                      title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Color(0xFFB5A957),
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                            if (hasNotes)
+                              ...noteTitles.take(1).map(
+                                    (title) => Text(
+                                      title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Color(0xFF7C5FDD),
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
@@ -280,12 +297,16 @@ class _WeekdayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        color: isWeekend ? Colors.red : Colors.white,
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
+    return Expanded(
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isWeekend ? Colors.red : Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
