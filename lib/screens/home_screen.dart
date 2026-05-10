@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/calendar_widget.dart';
-import '../widgets/tab_navigation_widget.dart';
-import '../widgets/note_view_widget.dart';
-import '../widgets/create_schedule_modal.dart';
-import '../widgets/user_initials_logo_button.dart';
+import 'package:flutter/material.dart';
+
 import '../services/firestore_service.dart';
+import '../theme/app_style_tokens.dart';
+import '../widgets/app_gradient_screen_shell.dart';
+import '../widgets/calendar_widget.dart';
+import '../widgets/common_top_header_row.dart';
+import '../widgets/create_schedule_modal.dart';
+import '../widgets/note_view_widget.dart';
+import '../widgets/section_card.dart';
+import '../widgets/tab_navigation_widget.dart';
+import '../widgets/user_initials_logo_button.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,136 +35,42 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0118),
-      body: SizedBox.expand(
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1C0A4A),
-                Color(0xFF0A0118),
-                Color(0xFF2D1265),
-              ],
+      backgroundColor: AppColors.background,
+      body: AppGradientScreenShell(
+        child: Column(
+          children: [
+            _HomeTopHeaderSection(
+              displayName: FirebaseAuth.instance.currentUser?.displayName,
+              onMenuPressed: () => _showMenu(context),
             ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // Header
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Image.asset(
-                            'assets/Logo.png',
-                            width: 28,
-                            height: 28,
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'moonlight.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      UserInitialsLogoButton(
-                        displayName: FirebaseAuth.instance.currentUser?.displayName,
-                        onPressed: () => _showMenu(context),
-                      ),
-                    ],
-                  ),
-                ),
-                // Tab Navigation
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: TabNavigationWidget(
-                    selectedIndex: _selectedTabIndex,
-                    onTabSelected: (index) =>
-                        setState(() => _selectedTabIndex = index),
-                  ),
-                ),
-                Expanded(
-                  child: _selectedTabIndex == 0
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 16),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1C0A4A)
-                                  .withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFF7C5FDD)
-                                    .withValues(alpha: 0.3),
-                              ),
-                            ),
-                            padding: const EdgeInsets.all(16),
-                            child: StreamBuilder<List<ScheduleItem>>(
-                              stream: _firestoreService.getScheduleItems(),
-                              builder: (context, snapshot) {
-                                final daysWithSchedule = <int>{};
-                                final schedulesByDay = <int, List<String>>{};
-                                if (snapshot.hasData) {
-                                  for (var item in snapshot.data!) {
-                                    daysWithSchedule.add(item.day);
-                                    schedulesByDay
-                                        .putIfAbsent(item.day, () => [])
-                                        .add(item.title);
-                                  }
-                                }
-
-                                return CalendarWidget(
-                                  selectedDate: _selectedDate,
-                                  onDateSelected: (date) =>
-                                      setState(() => _selectedDate = date),
-                                  daysWithSchedule: daysWithSchedule.toList(),
-                                  schedulesByDay: schedulesByDay,
-                                );
-                              },
-                            ),
-                          ),
-                        )
-                      : NoteViewWidget(
-                          selectedDate: _selectedDate,
-                          onDateSelected: (date) =>
-                              setState(() => _selectedDate = date),
-                          onAddNotePressed: () {},
-                        ),
-                ),
-                const SizedBox(height: 16),
-              ],
+            _HomeTabAndContentSection(
+              selectedTabIndex: _selectedTabIndex,
+              selectedDate: _selectedDate,
+              firestoreService: _firestoreService,
+              onTabSelected: (index) =>
+                  setState(() => _selectedTabIndex = index),
+              onDateSelected: (date) => setState(() => _selectedDate = date),
             ),
-          ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog<void>(
-            context: context,
-            builder: (context) => Dialog(
-              backgroundColor: Colors.transparent,
-              insetPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: const CreateScheduleModal(),
-              ),
-            ),
-          );
-        },
-        backgroundColor: const Color(0xFF7C5FDD),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: _HomeAddScheduleFab(
+        onPressed: () => _showCreateScheduleDialog(context),
+      ),
+    );
+  }
+
+  void _showCreateScheduleDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: const CreateScheduleModal(),
+        ),
       ),
     );
   }
@@ -167,40 +78,202 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2D1265),
+      backgroundColor: AppColors.modalSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
+      builder: (sheetContext) => _HomeMenuSheet(
+        onSettingsPressed: () {
+          Navigator.pop(sheetContext);
+          Navigator.push(
+            sheetContext,
+            MaterialPageRoute(builder: (context) => const SettingsScreen()),
+          );
+        },
+        onLogoutPressed: () {
+          Navigator.pop(sheetContext);
+          FirebaseAuth.instance.signOut();
+        },
+      ),
+    );
+  }
+}
+
+class _HomeTopHeaderSection extends StatelessWidget {
+  const _HomeTopHeaderSection({
+    required this.displayName,
+    required this.onMenuPressed,
+  });
+
+  final String? displayName;
+  final VoidCallback onMenuPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return CommonTopHeaderRow(
+      title: 'moonlight.',
+      leading: Image.asset('assets/Logo.png', width: 28, height: 28),
+      trailing: UserInitialsLogoButton(
+        displayName: displayName,
+        onPressed: onMenuPressed,
+      ),
+    );
+  }
+}
+
+class _HomeTabAndContentSection extends StatelessWidget {
+  const _HomeTabAndContentSection({
+    required this.selectedTabIndex,
+    required this.selectedDate,
+    required this.firestoreService,
+    required this.onTabSelected,
+    required this.onDateSelected,
+  });
+
+  final int selectedTabIndex;
+  final DateTime selectedDate;
+  final FirestoreService firestoreService;
+  final ValueChanged<int> onTabSelected;
+  final ValueChanged<DateTime> onDateSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.settings, color: Colors.white),
-            title: const Text(
-              'Settings',
-              style: TextStyle(color: Colors.white),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TabNavigationWidget(
+              selectedIndex: selectedTabIndex,
+              onTabSelected: onTabSelected,
             ),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
           ),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.red),
+          Expanded(
+            child: _HomeTabContent(
+              selectedTabIndex: selectedTabIndex,
+              selectedDate: selectedDate,
+              firestoreService: firestoreService,
+              onDateSelected: onDateSelected,
             ),
-            onTap: () {
-              Navigator.pop(context);
-              FirebaseAuth.instance.signOut();
-            },
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HomeTabContent extends StatelessWidget {
+  const _HomeTabContent({
+    required this.selectedTabIndex,
+    required this.selectedDate,
+    required this.firestoreService,
+    required this.onDateSelected,
+  });
+
+  final int selectedTabIndex;
+  final DateTime selectedDate;
+  final FirestoreService firestoreService;
+  final ValueChanged<DateTime> onDateSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (selectedTabIndex == 0) {
+      return _HomeScheduleTabView(
+        selectedDate: selectedDate,
+        firestoreService: firestoreService,
+        onDateSelected: onDateSelected,
+      );
+    }
+
+    return NoteViewWidget(
+      selectedDate: selectedDate,
+      onDateSelected: onDateSelected,
+      onAddNotePressed: () {},
+    );
+  }
+}
+
+class _HomeScheduleTabView extends StatelessWidget {
+  const _HomeScheduleTabView({
+    required this.selectedDate,
+    required this.firestoreService,
+    required this.onDateSelected,
+  });
+
+  final DateTime selectedDate;
+  final FirestoreService firestoreService;
+  final ValueChanged<DateTime> onDateSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      child: SectionCard(
+        child: StreamBuilder<List<ScheduleItem>>(
+          stream: firestoreService.getScheduleItems(),
+          builder: (context, snapshot) {
+            final daysWithSchedule = <int>{};
+            final schedulesByDay = <int, List<String>>{};
+            if (snapshot.hasData) {
+              for (final item in snapshot.data!) {
+                daysWithSchedule.add(item.day);
+                schedulesByDay.putIfAbsent(item.day, () => []).add(item.title);
+              }
+            }
+
+            return CalendarWidget(
+              selectedDate: selectedDate,
+              onDateSelected: onDateSelected,
+              daysWithSchedule: daysWithSchedule.toList(),
+              schedulesByDay: schedulesByDay,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeAddScheduleFab extends StatelessWidget {
+  const _HomeAddScheduleFab({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: onPressed,
+      backgroundColor: AppColors.accent,
+      child: const Icon(Icons.add, color: Colors.white),
+    );
+  }
+}
+
+class _HomeMenuSheet extends StatelessWidget {
+  const _HomeMenuSheet({
+    required this.onSettingsPressed,
+    required this.onLogoutPressed,
+  });
+
+  final VoidCallback onSettingsPressed;
+  final VoidCallback onLogoutPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.settings, color: Colors.white),
+          title: const Text('Settings', style: TextStyle(color: Colors.white)),
+          onTap: onSettingsPressed,
+        ),
+        ListTile(
+          leading: const Icon(Icons.logout, color: Colors.red),
+          title: const Text('Logout', style: TextStyle(color: Colors.red)),
+          onTap: onLogoutPressed,
+        ),
+      ],
     );
   }
 }
