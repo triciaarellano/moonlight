@@ -8,6 +8,7 @@ import '../widgets/calendar_widget.dart';
 import '../widgets/common_top_header_row.dart';
 import '../widgets/create_schedule_modal.dart';
 import '../widgets/note_view_widget.dart';
+import '../widgets/schedule_details_modal.dart';
 import '../widgets/section_card.dart';
 import '../widgets/tab_navigation_widget.dart';
 import '../widgets/user_initials_logo_button.dart';
@@ -211,25 +212,109 @@ class _HomeScheduleTabView extends StatelessWidget {
       child: SectionCard(
         child: StreamBuilder<List<ScheduleItem>>(
           stream: firestoreService.getScheduleItems(),
-          builder: (context, snapshot) {
+          builder: (context, scheduleSnapshot) {
             final daysWithSchedule = <int>{};
             final schedulesByDay = <int, List<String>>{};
-            if (snapshot.hasData) {
-              for (final item in snapshot.data!) {
+            final scheduleItemsByDay = <int, List<ScheduleItem>>{};
+            if (scheduleSnapshot.hasData) {
+              for (final item in scheduleSnapshot.data!) {
                 daysWithSchedule.add(item.day);
                 schedulesByDay.putIfAbsent(item.day, () => []).add(item.title);
+                scheduleItemsByDay.putIfAbsent(item.day, () => []).add(item);
               }
             }
 
-            return CalendarWidget(
-              selectedDate: selectedDate,
-              onDateSelected: onDateSelected,
-              daysWithSchedule: daysWithSchedule.toList(),
-              schedulesByDay: schedulesByDay,
+            return StreamBuilder<List<JobTimeSlot>>(
+              stream: firestoreService.getJobTimeSlots(),
+              builder: (context, slotSnapshot) {
+                final timeRangesByJobName =
+                    _buildTimeRangesByJobName(slotSnapshot.data ?? const []);
+
+                return CalendarWidget(
+                  selectedDate: selectedDate,
+                  onDateSelected: (date) {
+                    onDateSelected(date);
+                    _showScheduleDetailsDialog(
+                      context: context,
+                      selectedDate: date,
+                      schedulesForDay: scheduleItemsByDay[date.day] ??
+                          const <ScheduleItem>[],
+                      timeRangesByJobName: timeRangesByJobName,
+                    );
+                  },
+                  daysWithSchedule: daysWithSchedule.toList(),
+                  schedulesByDay: schedulesByDay,
+                );
+              },
             );
           },
         ),
       ),
+    );
+  }
+
+  void _showScheduleDetailsDialog({
+    required BuildContext context,
+    required DateTime selectedDate,
+    required List<ScheduleItem> schedulesForDay,
+    required Map<String, String> timeRangesByJobName,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ScheduleDetailsModal(
+          selectedDate: selectedDate,
+          schedules: schedulesForDay,
+          timeRangesByJobName: timeRangesByJobName,
+          onCreateSchedulePressed: () {
+            Navigator.of(dialogContext).pop();
+            _showCreateScheduleDialog(
+                context: context, initialDate: selectedDate);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showCreateScheduleDialog({
+    required BuildContext context,
+    required DateTime initialDate,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: CreateScheduleModal(initialDate: initialDate),
+        ),
+      ),
+    );
+  }
+
+  Map<String, String> _buildTimeRangesByJobName(List<JobTimeSlot> slots) {
+    final groupedRanges = <String, List<String>>{};
+
+    for (final slot in slots) {
+      final jobName = slot.jobName.trim();
+      if (jobName.isEmpty ||
+          slot.startTime.trim().isEmpty ||
+          slot.endTime.trim().isEmpty) {
+        continue;
+      }
+
+      final timeOfDayLabel = slot.timeOfDay.trim().isEmpty
+          ? 'Slot'
+          : '${slot.timeOfDay[0].toUpperCase()}${slot.timeOfDay.substring(1)}';
+      final range = '$timeOfDayLabel: ${slot.startTime} - ${slot.endTime}';
+      groupedRanges.putIfAbsent(jobName, () => []).add(range);
+    }
+
+    return groupedRanges.map(
+      (jobName, ranges) => MapEntry(jobName, ranges.toSet().join(' • ')),
     );
   }
 }

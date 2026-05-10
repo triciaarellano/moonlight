@@ -10,7 +10,12 @@ const String _scheduleCreateType = 'schedule';
 const String _noteCreateType = 'note';
 
 class CreateScheduleModal extends StatefulWidget {
-  const CreateScheduleModal({super.key});
+  const CreateScheduleModal({
+    super.key,
+    this.initialDate,
+  });
+
+  final DateTime? initialDate;
 
   @override
   State<CreateScheduleModal> createState() => _CreateScheduleModalState();
@@ -39,7 +44,7 @@ class _CreateScheduleModalState extends State<CreateScheduleModal> {
   void initState() {
     super.initState();
     _firestoreService = FirestoreService();
-    _selectedDate = DateTime.now();
+    _selectedDate = widget.initialDate ?? DateTime.now();
     _jobTimeSlotSubscription = _firestoreService.getJobTimeSlots().listen((
       slots,
     ) {
