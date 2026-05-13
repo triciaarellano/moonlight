@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -5,8 +7,8 @@ import 'package:flutter/foundation.dart';
 class ScheduleItem {
   final String id;
   final int day;
+  final String jobName;
   final String title;
-  final String time;
   final String place;
   final String notes;
   final bool isCompleted;
@@ -14,8 +16,8 @@ class ScheduleItem {
   ScheduleItem({
     required this.id,
     required this.day,
+    this.jobName = '',
     required this.title,
-    required this.time,
     required this.place,
     required this.notes,
     required this.isCompleted,
@@ -26,8 +28,8 @@ class ScheduleItem {
     return ScheduleItem(
       id: doc.id,
       day: data['day'] ?? 0,
+      jobName: data['jobName'] ?? '',
       title: data['title'] ?? '',
-      time: data['time'] ?? '',
       place: data['place'] ?? '',
       notes: data['notes'] ?? '',
       isCompleted: data['isCompleted'] ?? false,
@@ -37,8 +39,8 @@ class ScheduleItem {
   Map<String, dynamic> toMap() {
     return {
       'day': day,
+      'jobName': jobName,
       'title': title,
-      'time': time,
       'place': place,
       'notes': notes,
       'isCompleted': isCompleted,
@@ -48,6 +50,7 @@ class ScheduleItem {
 
 class Note {
   final String id;
+  final String jobName;
   final String title;
   final String content;
   final DateTime createdAt;
@@ -57,6 +60,7 @@ class Note {
 
   Note({
     required this.id,
+    this.jobName = '',
     required this.title,
     required this.content,
     required this.createdAt,
@@ -69,6 +73,7 @@ class Note {
     final data = doc.data() as Map<String, dynamic>;
     return Note(
       id: doc.id,
+      jobName: data['jobName'] ?? '',
       title: data['title'] ?? '',
       content: data['content'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -80,6 +85,7 @@ class Note {
 
   Map<String, dynamic> toMap() {
     return {
+      'jobName': jobName,
       'title': title,
       'content': content,
       'createdAt': createdAt,
@@ -196,6 +202,7 @@ class FirestoreService {
         .collection('notes')
         .doc(note.id)
         .update({
+      'jobName': note.jobName,
       'title': note.title,
       'content': note.content,
       'updatedAt': note.updatedAt,
@@ -209,5 +216,104 @@ class FirestoreService {
         .collection('notes')
         .doc(noteId)
         .delete();
+  }
+
+  // Job Time Slot methods
+  Stream<List<JobTimeSlot>> getJobTimeSlots() {
+    if (_userId.isEmpty) {
+      return Stream.value([]);
+    }
+
+    try {
+      return _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('jobTimeSlots')
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => JobTimeSlot.fromFirestore(doc))
+              .toList())
+          .transform(
+        StreamTransformer<List<JobTimeSlot>, List<JobTimeSlot>>.fromHandlers(
+          handleError: (error, stackTrace, sink) {
+            if (kDebugMode) {
+              print('Error fetching job time slots: $error');
+            }
+            sink.add(const <JobTimeSlot>[]);
+          },
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in getJobTimeSlots: $e');
+      }
+      return Stream.value([]);
+    }
+  }
+
+  Future<void> addJobTimeSlot(JobTimeSlot slot) {
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('jobTimeSlots')
+        .add(slot.toMap());
+  }
+
+  Future<void> updateJobTimeSlot(JobTimeSlot slot) {
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('jobTimeSlots')
+        .doc(slot.id)
+        .update(slot.toMap());
+  }
+
+  Future<void> deleteJobTimeSlot(String slotId) {
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('jobTimeSlots')
+        .doc(slotId)
+        .delete();
+  }
+}
+
+class JobTimeSlot {
+  final String id;
+  final String jobName; // e.g., 'Job 1', 'Job 2'
+  final String timeOfDay; // 'morning' or 'evening'
+  final String startTime;
+  final String endTime;
+  final String notes;
+
+  JobTimeSlot({
+    required this.id,
+    required this.jobName,
+    required this.timeOfDay,
+    required this.startTime,
+    required this.endTime,
+    required this.notes,
+  });
+
+  factory JobTimeSlot.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return JobTimeSlot(
+      id: doc.id,
+      jobName: data['jobName'] ?? 'Job',
+      timeOfDay: data['timeOfDay'] ?? 'morning',
+      startTime: data['startTime'] ?? '',
+      endTime: data['endTime'] ?? '',
+      notes: data['notes'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'jobName': jobName,
+      'timeOfDay': timeOfDay,
+      'startTime': startTime,
+      'endTime': endTime,
+      'notes': notes,
+    };
   }
 }

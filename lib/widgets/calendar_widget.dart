@@ -8,6 +8,18 @@ class CalendarWidget extends StatefulWidget {
   final List<int> daysWithNotes;
   final Map<int, List<String>> schedulesByDay;
   final Map<int, List<String>> notesByDay;
+  final Color monthTextColor;
+  final Color navigationIconColor;
+  final Color weekdayTextColor;
+  final Color weekendTextColor;
+  final Color dayTextColor;
+  final Color mutedDayTextColor;
+  final Color selectedDayColor;
+  final Color selectedDayTextColor;
+  final Color? todayFillColor;
+  final Color? todayBorderColor;
+  final Color scheduleDotColor;
+  final Color noteDotColor;
 
   const CalendarWidget({
     super.key,
@@ -17,6 +29,18 @@ class CalendarWidget extends StatefulWidget {
     this.daysWithNotes = const [],
     this.schedulesByDay = const {},
     this.notesByDay = const {},
+    this.monthTextColor = Colors.white,
+    this.navigationIconColor = Colors.white,
+    this.weekdayTextColor = Colors.white,
+    this.weekendTextColor = Colors.red,
+    this.dayTextColor = Colors.white,
+    this.mutedDayTextColor = const Color(0xFF616161),
+    this.selectedDayColor = const Color(0xFF7C5FDD),
+    this.selectedDayTextColor = Colors.white,
+    this.todayFillColor,
+    this.todayBorderColor,
+    this.scheduleDotColor = const Color(0xFFB5A957),
+    this.noteDotColor = const Color(0xFF7C5FDD),
   });
 
   @override
@@ -73,16 +97,20 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         DateTime(_displayedMonth.year, _displayedMonth.month + 1, 0).day;
     final firstDayWeekday =
         DateTime(_displayedMonth.year, _displayedMonth.month, 1).weekday;
+    final todayFillColor = widget.todayFillColor ??
+        widget.selectedDayColor.withValues(alpha: 0.25);
+    final todayBorderColor = widget.todayBorderColor ??
+        widget.selectedDayColor.withValues(alpha: 0.5);
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Month/Year header with navigation
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton(
-              icon: const Icon(Icons.chevron_left, color: Colors.white),
+              icon: Icon(Icons.chevron_left, color: widget.navigationIconColor),
               iconSize: 22,
               onPressed: _previousMonth,
               padding: EdgeInsets.zero,
@@ -92,8 +120,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               onTap: _todayMonth,
               child: Text(
                 monthYear,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: widget.monthTextColor,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.8,
@@ -101,7 +129,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.chevron_right, color: Colors.white),
+              icon:
+                  Icon(Icons.chevron_right, color: widget.navigationIconColor),
               iconSize: 22,
               onPressed: _nextMonth,
               padding: EdgeInsets.zero,
@@ -110,29 +139,58 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ],
         ),
         const SizedBox(height: 12),
-        // Weekday headers
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: const [
-            _WeekdayHeader('SUN', isWeekend: true),
-            _WeekdayHeader('MON'),
-            _WeekdayHeader('TUE'),
-            _WeekdayHeader('WED'),
-            _WeekdayHeader('THU'),
-            _WeekdayHeader('FRI'),
-            _WeekdayHeader('SAT', isWeekend: true),
+          children: [
+            _WeekdayHeader(
+              'SUN',
+              isWeekend: true,
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'MON',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'TUE',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'WED',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'THU',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'FRI',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'SAT',
+              isWeekend: true,
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
           ],
         ),
         const SizedBox(height: 10),
-        // Calendar grid
         GridView.builder(
           shrinkWrap: true,
+          padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.3,
+            mainAxisSpacing: 10.0,
+            crossAxisSpacing: 10.0,
+            childAspectRatio: 0.85,
           ),
           itemCount: 42,
           itemBuilder: (context, index) {
@@ -143,8 +201,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 : (dayNum > daysInMonth
                     ? dayNum - daysInMonth
                     : dayNum +
-                        DateTime(_displayedMonth.year, _displayedMonth.month, 0)
-                            .day);
+                        DateTime(
+                          _displayedMonth.year,
+                          _displayedMonth.month,
+                          0,
+                        ).day);
 
             final isToday = isCurrentMonth &&
                 dayNum == now.day &&
@@ -156,97 +217,95 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 _displayedMonth.month == widget.selectedDate.month &&
                 _displayedMonth.year == widget.selectedDate.year;
 
+            final scheduleTitles = isCurrentMonth
+                ? (widget.schedulesByDay[dayNum] ?? const <String>[])
+                : const <String>[];
+            final noteTitles = isCurrentMonth
+                ? (widget.notesByDay[dayNum] ?? const <String>[])
+                : const <String>[];
+            final hasSchedule = isCurrentMonth &&
+                (scheduleTitles.isNotEmpty ||
+                    widget.daysWithSchedule.contains(dayNum));
+            final hasNotes = isCurrentMonth &&
+                (noteTitles.isNotEmpty ||
+                    widget.daysWithNotes.contains(dayNum));
+
             return GestureDetector(
-                onTap: isCurrentMonth
-                    ? () => widget.onDateSelected(DateTime(
-                        _displayedMonth.year, _displayedMonth.month, dayNum))
-                    : null,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSelected
-                        ? const Color(0xFF7C5FDD)
-                        : (isToday
-                            ? const Color(0xFF7C5FDD).withValues(alpha: 0.25)
-                            : Colors.transparent),
-                    border: isToday && !isSelected
-                        ? Border.all(
-                            color:
-                                const Color(0xFF7C5FDD).withValues(alpha: 0.5),
-                            width: 1.5,
-                          )
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        displayDay.toString(),
-                        style: TextStyle(
-                          color: !isCurrentMonth
-                              ? Colors.grey.shade700
-                              : (index % 7 == 0
-                                  ? Colors.red[300]
-                                  : Colors.white),
-                          fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w500,
+              onTap: isCurrentMonth
+                  ? () => widget.onDateSelected(
+                        DateTime(
+                          _displayedMonth.year,
+                          _displayedMonth.month,
+                          dayNum,
+                        ),
+                      )
+                  : null,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected
+                      ? widget.selectedDayColor
+                      : (isToday ? todayFillColor : Colors.transparent),
+                  border: isToday && !isSelected
+                      ? Border.all(
+                          color: todayBorderColor,
+                          width: 1.5,
+                        )
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      displayDay.toString(),
+                      style: TextStyle(
+                        color: !isCurrentMonth
+                            ? widget.mutedDayTextColor
+                            : (isSelected
+                                ? widget.selectedDayTextColor
+                                : (index % 7 == 0
+                                    ? widget.weekendTextColor
+                                    : widget.dayTextColor)),
+                        fontSize: 13,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                    if (hasSchedule || hasNotes)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (hasSchedule)
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                ).copyWith(color: widget.scheduleDotColor),
+                              ),
+                            if (hasSchedule && hasNotes)
+                              const SizedBox(width: 2),
+                            if (hasNotes)
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                ).copyWith(color: widget.noteDotColor),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      // Display schedule titles for this day
-                      if (isCurrentMonth &&
-                          widget.schedulesByDay.containsKey(dayNum))
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: (widget.schedulesByDay[dayNum] ?? [])
-                                  .take(2)
-                                  .map((title) => Text(
-                                        title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Color(0xFFB5A957),
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
-                          ),
-                        ),
-                      // Display note titles for this day
-                      if (isCurrentMonth &&
-                          widget.notesByDay.containsKey(dayNum))
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: (widget.notesByDay[dayNum] ?? [])
-                                  .take(2)
-                                  .map((title) => Text(
-                                        title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Color(0xFF7C5FDD),
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ));
+                  ],
+                ),
+              ),
+            );
           },
         ),
       ],
@@ -275,17 +334,28 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 class _WeekdayHeader extends StatelessWidget {
   final String label;
   final bool isWeekend;
+  final Color weekdayTextColor;
+  final Color weekendTextColor;
 
-  const _WeekdayHeader(this.label, {this.isWeekend = false});
+  const _WeekdayHeader(
+    this.label, {
+    this.isWeekend = false,
+    required this.weekdayTextColor,
+    required this.weekendTextColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        color: isWeekend ? Colors.red : Colors.white,
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
+    return Expanded(
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isWeekend ? weekendTextColor : weekdayTextColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

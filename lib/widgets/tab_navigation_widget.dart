@@ -3,11 +3,21 @@ import 'package:flutter/material.dart';
 class TabNavigationWidget extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onTabSelected;
+  final Color backgroundColor;
+  final Color selectedBackgroundColor;
+  final Color selectedTextColor;
+  final Color unselectedTextColor;
+  final Color borderColor;
 
   const TabNavigationWidget({
     super.key,
     required this.selectedIndex,
     required this.onTabSelected,
+    this.backgroundColor = const Color(0xFF3D1E6F),
+    this.selectedBackgroundColor = const Color(0xFF5A3FA3),
+    this.selectedTextColor = Colors.white,
+    this.unselectedTextColor = Colors.white,
+    this.borderColor = Colors.transparent,
   });
 
   @override
@@ -15,7 +25,8 @@ class TabNavigationWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: const Color(0xFF3D1E6F),
+        color: backgroundColor,
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -31,7 +42,9 @@ class TabNavigationWidget extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () => onTabSelected(index),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
           decoration: BoxDecoration(
             borderRadius: index == 0
                 ? const BorderRadius.only(
@@ -42,14 +55,14 @@ class TabNavigationWidget extends StatelessWidget {
                     topRight: Radius.circular(8),
                     bottomRight: Radius.circular(8),
                   ),
-            color: isSelected ? const Color(0xFF5A3FA3) : Colors.transparent,
+            color: isSelected ? selectedBackgroundColor : Colors.transparent,
           ),
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color: isSelected ? selectedTextColor : unselectedTextColor,
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
