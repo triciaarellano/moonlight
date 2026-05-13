@@ -10,6 +10,7 @@ class JobTimeSlotsSection extends StatelessWidget {
   final VoidCallback onAddPressed;
   final ValueChanged<JobTimeSlot> onEdit;
   final ValueChanged<JobTimeSlot> onDelete;
+  final AppScreenPalette? palette;
 
   const JobTimeSlotsSection({
     super.key,
@@ -17,10 +18,13 @@ class JobTimeSlotsSection extends StatelessWidget {
     required this.onAddPressed,
     required this.onEdit,
     required this.onDelete,
+    this.palette,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = palette ?? AppScreenPalette.night();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
@@ -29,10 +33,10 @@ class JobTimeSlotsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Job Time Slots',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: colors.primaryText,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -42,8 +46,8 @@ class JobTimeSlotsSection extends StatelessWidget {
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colors.accent,
+                  foregroundColor: colors.onAccent,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
@@ -51,17 +55,17 @@ class JobTimeSlotsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _buildContent(),
+          _buildContent(colors),
         ],
       ),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(AppScreenPalette colors) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(AppColors.accent),
+          valueColor: AlwaysStoppedAnimation(colors.accent),
         ),
       );
     }
@@ -69,7 +73,7 @@ class JobTimeSlotsSection extends StatelessWidget {
     if (snapshot.hasError) {
       return Text(
         'Error: ${snapshot.error}',
-        style: const TextStyle(color: Colors.red),
+        style: TextStyle(color: colors.destructive),
       );
     }
 
@@ -78,13 +82,13 @@ class JobTimeSlotsSection extends StatelessWidget {
     if (slots.isEmpty) {
       return SectionCard(
         borderRadius: 10,
-        backgroundColor: AppColors.cardSurface.withValues(alpha: 0.3),
-        borderColor: AppColors.accent.withValues(alpha: 0.2),
-        child: const Center(
+        backgroundColor: colors.cardSurface,
+        borderColor: colors.cardBorder,
+        child: Center(
           child: Text(
             'No job time slots configured yet',
             style: TextStyle(
-              color: Colors.white70,
+              color: colors.secondaryText,
               fontSize: 13,
             ),
           ),
@@ -96,6 +100,7 @@ class JobTimeSlotsSection extends StatelessWidget {
       children: slots.map((slot) {
         return JobTimeSlotCard(
           slot: slot,
+          palette: colors,
           onEdit: () => onEdit(slot),
           onDelete: () => onDelete(slot),
         );

@@ -272,7 +272,8 @@ class _HomeScreenState extends State<HomeScreen> {
           final didUpdate = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
-              builder: (context) => const EditProfileScreen(),
+              builder: (context) =>
+                  EditProfileScreen(isDayTheme: ambience.isMorning),
             ),
           );
           if (didUpdate == true && mounted) {
@@ -282,9 +283,11 @@ class _HomeScreenState extends State<HomeScreen> {
         onManageJobsPressed: () {
           Navigator.pop(sheetContext);
           Navigator.push(
-            sheetContext,
+            context,
             MaterialPageRoute(
-                builder: (context) => const JobsManagementScreen()),
+              builder: (context) =>
+                  JobsManagementScreen(isDayTheme: ambience.isMorning),
+            ),
           );
         },
         onLogoutPressed: () {
@@ -618,7 +621,8 @@ class _HomeTabContent extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const JobsManagementScreen(),
+                  builder: (context) =>
+                      JobsManagementScreen(isDayTheme: ambience.isMorning),
                 ),
               );
             },

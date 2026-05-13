@@ -9,6 +9,7 @@ class CommonTopHeaderRow extends StatelessWidget {
     this.trailing,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     this.titleStyle,
+    this.backIconColor = Colors.white,
     this.leadingSpacing = 10,
   });
 
@@ -18,6 +19,7 @@ class CommonTopHeaderRow extends StatelessWidget {
   final Widget? trailing;
   final EdgeInsetsGeometry padding;
   final TextStyle? titleStyle;
+  final Color backIconColor;
   final double leadingSpacing;
 
   @override
@@ -28,7 +30,7 @@ class CommonTopHeaderRow extends StatelessWidget {
         children: [
           if (onBackPressed != null) ...[
             IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+              icon: Icon(Icons.arrow_back, color: backIconColor, size: 24),
               onPressed: onBackPressed,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),

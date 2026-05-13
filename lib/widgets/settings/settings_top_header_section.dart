@@ -5,11 +5,13 @@ import '../common_top_header_row.dart';
 class SettingsTopHeaderSection extends StatelessWidget {
   final VoidCallback onBackPressed;
   final String title;
+  final Color textColor;
 
   const SettingsTopHeaderSection({
     super.key,
     required this.onBackPressed,
     this.title = 'Settings',
+    this.textColor = Colors.white,
   });
 
   @override
@@ -19,6 +21,12 @@ class SettingsTopHeaderSection extends StatelessWidget {
         CommonTopHeaderRow(
           title: title,
           onBackPressed: onBackPressed,
+          backIconColor: textColor,
+          titleStyle: TextStyle(
+            color: textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 16),
       ],
