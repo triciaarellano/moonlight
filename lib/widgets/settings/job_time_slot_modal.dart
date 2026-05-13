@@ -124,118 +124,171 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
   @override
   Widget build(BuildContext context) {
     final palette = widget.palette ?? AppScreenPalette.night();
+    final mediaQuery = MediaQuery.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: palette.modalSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.55,
-        minChildSize: 0.45,
-        maxChildSize: 0.85,
-        builder: (context, scrollController) {
-          return SingleChildScrollView(
-            controller: scrollController,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: palette.modalSurface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 640,
+            maxHeight: mediaQuery.size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.only(
-                top: 16,
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ModalHeaderRow(
-                    title: _title,
-                    titleStyle: TextStyle(
-                      color: palette.primaryText,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    iconColor: palette.primaryText,
-                    onClose: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(height: 12),
-                  _ModalFieldGroup(
-                    label: 'Job Name',
-                    palette: palette,
-                    child: InputFields(
-                      controller: _jobNameController,
-                      hintText: 'e.g., Job 1, Job 2',
-                      textColor: palette.primaryText,
-                      hintColor: palette.mutedText,
-                      fillColor: palette.surface,
-                      borderColor: palette.cardBorder,
-                      focusedBorderColor: palette.accent,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ModalFieldGroup(
-                    label: 'Time of Day',
-                    palette: palette,
-                    child: _TimeOfDaySelector(
-                      selected: _timeOfDay,
-                      palette: palette,
-                      onChanged: (value) {
-                        setState(() {
-                          _timeOfDay = value;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ModalFieldGroup(
-                    label: 'Start Time',
-                    palette: palette,
-                    child: _TimePickerField(
-                      value: _startTimeController.text,
-                      placeholder: 'Select start time',
-                      palette: palette,
-                      onTap: () => _selectTime(context, _startTimeController),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ModalFieldGroup(
-                    label: 'End Time',
-                    palette: palette,
-                    child: _TimePickerField(
-                      value: _endTimeController.text,
-                      placeholder: 'Select end time',
-                      palette: palette,
-                      onTap: () => _selectTime(context, _endTimeController),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ModalFieldGroup(
-                    label: 'Notes (Optional)',
-                    palette: palette,
-                    child: InputFields(
-                      controller: _notesController,
-                      maxLines: 3,
-                      hintText: 'Add notes for this time slot',
-                      textColor: palette.primaryText,
-                      hintColor: palette.mutedText,
-                      fillColor: palette.surface,
-                      borderColor: palette.cardBorder,
-                      focusedBorderColor: palette.accent,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _SaveSlotButton(
-                    label: _actionLabel,
-                    palette: palette,
-                    onPressed: _save,
-                  ),
-                  const SizedBox(height: 12),
-                ],
+              padding: const EdgeInsets.all(16),
+              child: _ModalFormContent(
+                title: _title,
+                actionLabel: _actionLabel,
+                palette: palette,
+                timeOfDay: _timeOfDay,
+                jobNameController: _jobNameController,
+                startTimeController: _startTimeController,
+                endTimeController: _endTimeController,
+                notesController: _notesController,
+                onClose: () => Navigator.pop(context),
+                onSave: _save,
+                onTimeOfDayChanged: (value) {
+                  setState(() {
+                    _timeOfDay = value;
+                  });
+                },
+                onSelectStartTime: () =>
+                    _selectTime(context, _startTimeController),
+                onSelectEndTime: () =>
+                    _selectTime(context, _endTimeController),
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _ModalFormContent extends StatelessWidget {
+  const _ModalFormContent({
+    required this.title,
+    required this.actionLabel,
+    required this.palette,
+    required this.timeOfDay,
+    required this.jobNameController,
+    required this.startTimeController,
+    required this.endTimeController,
+    required this.notesController,
+    required this.onClose,
+    required this.onSave,
+    required this.onTimeOfDayChanged,
+    required this.onSelectStartTime,
+    required this.onSelectEndTime,
+  });
+
+  final String title;
+  final String actionLabel;
+  final AppScreenPalette palette;
+  final String timeOfDay;
+  final TextEditingController jobNameController;
+  final TextEditingController startTimeController;
+  final TextEditingController endTimeController;
+  final TextEditingController notesController;
+  final VoidCallback onClose;
+  final VoidCallback onSave;
+  final ValueChanged<String> onTimeOfDayChanged;
+  final VoidCallback onSelectStartTime;
+  final VoidCallback onSelectEndTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ModalHeaderRow(
+          title: title,
+          titleStyle: TextStyle(
+            color: palette.primaryText,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+          iconColor: palette.primaryText,
+          onClose: onClose,
+        ),
+        const SizedBox(height: 12),
+        _ModalFieldGroup(
+          label: 'Job Name',
+          palette: palette,
+          child: InputFields(
+            controller: jobNameController,
+            hintText: 'e.g., Job 1, Job 2',
+            textColor: palette.primaryText,
+            hintColor: palette.mutedText,
+            fillColor: palette.surface,
+            borderColor: palette.cardBorder,
+            focusedBorderColor: palette.accent,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ModalFieldGroup(
+          label: 'Time of Day',
+          palette: palette,
+          child: _TimeOfDaySelector(
+            selected: timeOfDay,
+            palette: palette,
+            onChanged: onTimeOfDayChanged,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ModalFieldGroup(
+          label: 'Start Time',
+          palette: palette,
+          child: _TimePickerField(
+            value: startTimeController.text,
+            placeholder: 'Select start time',
+            palette: palette,
+            onTap: onSelectStartTime,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ModalFieldGroup(
+          label: 'End Time',
+          palette: palette,
+          child: _TimePickerField(
+            value: endTimeController.text,
+            placeholder: 'Select end time',
+            palette: palette,
+            onTap: onSelectEndTime,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _ModalFieldGroup(
+          label: 'Notes (Optional)',
+          palette: palette,
+          child: InputFields(
+            controller: notesController,
+            maxLines: 3,
+            hintText: 'Add notes for this time slot',
+            textColor: palette.primaryText,
+            hintColor: palette.mutedText,
+            fillColor: palette.surface,
+            borderColor: palette.cardBorder,
+            focusedBorderColor: palette.accent,
+          ),
+        ),
+        const SizedBox(height: 20),
+        _SaveSlotButton(
+          label: actionLabel,
+          palette: palette,
+          onPressed: onSave,
+        ),
+        const SizedBox(height: 12),
+      ],
     );
   }
 }

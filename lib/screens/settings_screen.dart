@@ -55,11 +55,9 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> {
   }
 
   void _showJobTimeSlotModal(BuildContext context, {JobTimeSlot? slot}) {
-    showModalBottomSheet(
+    showDialog<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => JobTimeSlotModal(
+      builder: (dialogContext) => JobTimeSlotModal(
         slot: slot,
         onSave: (newSlot) {
           if (slot == null) {
@@ -67,7 +65,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> {
           } else {
             _firestoreService.updateJobTimeSlot(newSlot);
           }
-          Navigator.pop(context);
+          Navigator.pop(dialogContext);
         },
       ),
     );
