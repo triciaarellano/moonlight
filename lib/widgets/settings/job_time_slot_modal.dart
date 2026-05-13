@@ -114,9 +114,9 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
+        initialChildSize: 0.55,
+        minChildSize: 0.45,
+        maxChildSize: 0.85,
         builder: (context, scrollController) {
           return SingleChildScrollView(
             controller: scrollController,
@@ -135,7 +135,7 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
                     title: _title,
                     onClose: () => Navigator.pop(context),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ModalFieldGroup(
                     label: 'Job Name',
                     child: InputFields(
@@ -145,7 +145,7 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
                       focusedBorderColor: AppColors.label,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ModalFieldGroup(
                     label: 'Time of Day',
                     child: _TimeOfDaySelector(
@@ -157,7 +157,7 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ModalFieldGroup(
                     label: 'Start Time',
                     child: _TimePickerField(
@@ -166,7 +166,7 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
                       onTap: () => _selectTime(context, _startTimeController),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ModalFieldGroup(
                     label: 'End Time',
                     child: _TimePickerField(
@@ -175,7 +175,7 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
                       onTap: () => _selectTime(context, _endTimeController),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ModalFieldGroup(
                     label: 'Notes (Optional)',
                     child: InputFields(
@@ -186,9 +186,9 @@ class _JobTimeSlotModalState extends State<JobTimeSlotModal> {
                       focusedBorderColor: AppColors.label,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   _SaveSlotButton(label: _actionLabel, onPressed: _save),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                 ],
               ),
             ),

@@ -6,14 +6,14 @@ import '../widgets/settings/job_time_slot_modal.dart';
 import '../widgets/settings/job_time_slots_section.dart';
 import '../widgets/settings/settings_top_header_section.dart';
 
-class ManageJobsScreen extends StatefulWidget {
-  const ManageJobsScreen({super.key});
+class JobsManagementScreen extends StatefulWidget {
+  const JobsManagementScreen({super.key});
 
   @override
-  State<ManageJobsScreen> createState() => _ManageJobsScreenState();
+  State<JobsManagementScreen> createState() => _JobsManagementScreenState();
 }
 
-class _ManageJobsScreenState extends State<ManageJobsScreen> {
+class _JobsManagementScreenState extends State<JobsManagementScreen> {
   late FirestoreService _firestoreService;
 
   @override

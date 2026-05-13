@@ -4,10 +4,12 @@ import '../common_top_header_row.dart';
 
 class SettingsTopHeaderSection extends StatelessWidget {
   final VoidCallback onBackPressed;
+  final String title;
 
   const SettingsTopHeaderSection({
     super.key,
     required this.onBackPressed,
+    this.title = 'Settings',
   });
 
   @override
@@ -15,7 +17,7 @@ class SettingsTopHeaderSection extends StatelessWidget {
     return Column(
       children: [
         CommonTopHeaderRow(
-          title: 'Settings',
+          title: title,
           onBackPressed: onBackPressed,
         ),
         const SizedBox(height: 16),

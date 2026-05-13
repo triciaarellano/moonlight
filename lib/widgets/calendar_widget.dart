@@ -75,6 +75,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         DateTime(_displayedMonth.year, _displayedMonth.month, 1).weekday;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -122,149 +123,131 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ],
         ),
         const SizedBox(height: 10),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const crossSpacing = 10.0;
-              const mainSpacing = 10.0;
-              final usableWidth = constraints.maxWidth - (crossSpacing * 6);
-              final usableHeight = constraints.maxHeight - (mainSpacing * 5);
-              final cellWidth = usableWidth / 7;
-              final cellHeight = usableHeight / 6;
-              final childAspectRatio =
-                  cellWidth / cellHeight.clamp(1.0, 1000.0);
-              final showEventText = cellHeight >= 44;
+        GridView.builder(
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            mainAxisSpacing: 10.0,
+            crossAxisSpacing: 10.0,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: 42,
+          itemBuilder: (context, index) {
+            final dayNum = index - firstDayWeekday + 2;
+            final isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
+            final displayDay = isCurrentMonth
+                ? dayNum
+                : (dayNum > daysInMonth
+                    ? dayNum - daysInMonth
+                    : dayNum +
+                        DateTime(
+                          _displayedMonth.year,
+                          _displayedMonth.month,
+                          0,
+                        ).day);
 
-              return GridView.builder(
-                padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: mainSpacing,
-                  crossAxisSpacing: crossSpacing,
-                  childAspectRatio: childAspectRatio,
+            final isToday = isCurrentMonth &&
+                dayNum == now.day &&
+                _displayedMonth.month == now.month &&
+                _displayedMonth.year == now.year;
+
+            final isSelected = isCurrentMonth &&
+                dayNum == widget.selectedDate.day &&
+                _displayedMonth.month == widget.selectedDate.month &&
+                _displayedMonth.year == widget.selectedDate.year;
+
+            final scheduleTitles = isCurrentMonth
+                ? (widget.schedulesByDay[dayNum] ?? const <String>[])
+                : const <String>[];
+            final noteTitles = isCurrentMonth
+                ? (widget.notesByDay[dayNum] ?? const <String>[])
+                : const <String>[];
+            final hasSchedule = isCurrentMonth &&
+                (scheduleTitles.isNotEmpty ||
+                    widget.daysWithSchedule.contains(dayNum));
+            final hasNotes = isCurrentMonth &&
+                (noteTitles.isNotEmpty ||
+                    widget.daysWithNotes.contains(dayNum));
+
+            return GestureDetector(
+              onTap: isCurrentMonth
+                  ? () => widget.onDateSelected(
+                        DateTime(
+                          _displayedMonth.year,
+                          _displayedMonth.month,
+                          dayNum,
+                        ),
+                      )
+                  : null,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected
+                      ? const Color(0xFF7C5FDD)
+                      : (isToday
+                          ? const Color(0xFF7C5FDD).withValues(alpha: 0.25)
+                          : Colors.transparent),
+                  border: isToday && !isSelected
+                      ? Border.all(
+                          color: const Color(0xFF7C5FDD).withValues(alpha: 0.5),
+                          width: 1.5,
+                        )
+                      : null,
                 ),
-                itemCount: 42,
-                itemBuilder: (context, index) {
-                  final dayNum = index - firstDayWeekday + 2;
-                  final isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
-                  final displayDay = isCurrentMonth
-                      ? dayNum
-                      : (dayNum > daysInMonth
-                          ? dayNum - daysInMonth
-                          : dayNum +
-                              DateTime(
-                                _displayedMonth.year,
-                                _displayedMonth.month,
-                                0,
-                              ).day);
-
-                  final isToday = isCurrentMonth &&
-                      dayNum == now.day &&
-                      _displayedMonth.month == now.month &&
-                      _displayedMonth.year == now.year;
-
-                  final isSelected = isCurrentMonth &&
-                      dayNum == widget.selectedDate.day &&
-                      _displayedMonth.month == widget.selectedDate.month &&
-                      _displayedMonth.year == widget.selectedDate.year;
-
-                  final scheduleTitles = isCurrentMonth
-                      ? (widget.schedulesByDay[dayNum] ?? const <String>[])
-                      : const <String>[];
-                  final noteTitles = isCurrentMonth
-                      ? (widget.notesByDay[dayNum] ?? const <String>[])
-                      : const <String>[];
-                  final hasSchedule = isCurrentMonth &&
-                      (scheduleTitles.isNotEmpty ||
-                          widget.daysWithSchedule.contains(dayNum));
-                  final hasNotes = isCurrentMonth &&
-                      (noteTitles.isNotEmpty ||
-                          widget.daysWithNotes.contains(dayNum));
-
-                  return GestureDetector(
-                    onTap: isCurrentMonth
-                        ? () => widget.onDateSelected(
-                              DateTime(
-                                _displayedMonth.year,
-                                _displayedMonth.month,
-                                dayNum,
-                              ),
-                            )
-                        : null,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected
-                            ? const Color(0xFF7C5FDD)
-                            : (isToday
-                                ? const Color(0xFF7C5FDD)
-                                    .withValues(alpha: 0.25)
-                                : Colors.transparent),
-                        border: isToday && !isSelected
-                            ? Border.all(
-                                color: const Color(0xFF7C5FDD)
-                                    .withValues(alpha: 0.5),
-                                width: 1.5,
-                              )
-                            : null,
-                      ),
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            displayDay.toString(),
-                            style: TextStyle(
-                              color: !isCurrentMonth
-                                  ? Colors.grey.shade700
-                                  : (index % 7 == 0
-                                      ? Colors.red[300]
-                                      : Colors.white),
-                              fontSize: 13,
-                              fontWeight: isSelected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                          if (showEventText) ...[
-                            const SizedBox(height: 2),
-                            if (hasSchedule)
-                              ...scheduleTitles.take(1).map(
-                                    (title) => Text(
-                                      title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Color(0xFFB5A957),
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                            if (hasNotes)
-                              ...noteTitles.take(1).map(
-                                    (title) => Text(
-                                      title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Color(0xFF7C5FDD),
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                          ],
-                        ],
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      displayDay.toString(),
+                      style: TextStyle(
+                        color: !isCurrentMonth
+                            ? Colors.grey.shade700
+                            : (index % 7 == 0 ? Colors.red[300] : Colors.white),
+                        fontSize: 13,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
-                  );
-                },
-              );
-            },
-          ),
+                    if (hasSchedule || hasNotes)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (hasSchedule)
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFB5A957),
+                                ),
+                              ),
+                            if (hasSchedule && hasNotes)
+                              const SizedBox(width: 2),
+                            if (hasNotes)
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFF7C5FDD),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
