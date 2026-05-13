@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 
 class NoJobsSetupCard extends StatelessWidget {
   final VoidCallback onSetupPressed;
+  final Color accentColor;
+  final Color accentEndColor;
+  final Color primaryTextColor;
+  final Color secondaryTextColor;
+  final Color mutedTextColor;
+  final Color buttonTextColor;
 
   const NoJobsSetupCard({
     super.key,
     required this.onSetupPressed,
+    this.accentColor = const Color(0xFF7C5FDD),
+    this.accentEndColor = const Color(0xFF5E3FBD),
+    this.primaryTextColor = Colors.white,
+    this.secondaryTextColor = Colors.white70,
+    this.mutedTextColor = Colors.white54,
+    this.buttonTextColor = Colors.white,
   });
 
   @override
@@ -22,17 +34,14 @@ class NoJobsSetupCard extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF7C5FDD),
-                    Color(0xFF5E3FBD),
-                  ],
+                  colors: [accentColor, accentEndColor],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF7C5FDD).withValues(alpha: 0.4),
+                    color: accentColor.withValues(alpha: 0.4),
                     blurRadius: 24,
                     spreadRadius: 4,
                   ),
@@ -48,10 +57,10 @@ class NoJobsSetupCard extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             // Title
-            const Text(
+            Text(
               'Set Up Your Jobs',
               style: TextStyle(
-                color: Colors.white,
+                color: primaryTextColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
@@ -63,7 +72,7 @@ class NoJobsSetupCard extends StatelessWidget {
             Text(
               'Add your jobs with their specific work hours. Tasks will automatically appear based on your active work time.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: secondaryTextColor,
                 fontSize: 14,
                 height: 1.6,
                 letterSpacing: 0.3,
@@ -81,18 +90,15 @@ class NoJobsSetupCard extends StatelessWidget {
                 highlightColor: Colors.white.withValues(alpha: 0.05),
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF7C5FDD),
-                        Color(0xFF5E3FBD),
-                      ],
+                      colors: [accentColor, accentEndColor],
                     ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF7C5FDD).withValues(alpha: 0.3),
+                        color: accentColor.withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -102,19 +108,19 @@ class NoJobsSetupCard extends StatelessWidget {
                     horizontal: 48,
                     vertical: 14,
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.add_circle_outline,
-                        color: Colors.white,
+                        color: buttonTextColor,
                         size: 20,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Text(
                         'Add Your Jobs',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: buttonTextColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
@@ -130,7 +136,7 @@ class NoJobsSetupCard extends StatelessWidget {
             Text(
               'You can manage your jobs anytime from the menu',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: mutedTextColor,
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
               ),

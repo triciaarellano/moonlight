@@ -7,17 +7,19 @@ class AppGradientScreenShell extends StatelessWidget {
     super.key,
     required this.child,
     this.useSafeArea = true,
+    this.gradient = AppGradients.screenBackground,
   });
 
   final Widget child;
   final bool useSafeArea;
+  final Gradient gradient;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.screenBackground,
+        decoration: BoxDecoration(
+          gradient: gradient,
         ),
         child: useSafeArea ? SafeArea(child: child) : child,
       ),

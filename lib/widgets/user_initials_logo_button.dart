@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 class UserInitialsLogoButton extends StatelessWidget {
   final String? displayName;
   final VoidCallback onPressed;
+  final Gradient? gradient;
+  final Color? borderColor;
+  final Color textColor;
 
   const UserInitialsLogoButton({
     super.key,
     required this.onPressed,
     this.displayName,
+    this.gradient,
+    this.borderColor,
+    this.textColor = Colors.white,
   });
 
   @override
@@ -22,18 +28,19 @@ class UserInitialsLogoButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.25),
+            color: borderColor ?? Colors.white.withValues(alpha: 0.25),
           ),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF7C5FDD), Color(0xFF4B2FA4)],
-          ),
+          gradient: gradient ??
+              const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF7C5FDD), Color(0xFF4B2FA4)],
+              ),
         ),
         child: Text(
           initials,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: textColor,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),

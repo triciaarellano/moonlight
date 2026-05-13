@@ -8,6 +8,18 @@ class CalendarWidget extends StatefulWidget {
   final List<int> daysWithNotes;
   final Map<int, List<String>> schedulesByDay;
   final Map<int, List<String>> notesByDay;
+  final Color monthTextColor;
+  final Color navigationIconColor;
+  final Color weekdayTextColor;
+  final Color weekendTextColor;
+  final Color dayTextColor;
+  final Color mutedDayTextColor;
+  final Color selectedDayColor;
+  final Color selectedDayTextColor;
+  final Color? todayFillColor;
+  final Color? todayBorderColor;
+  final Color scheduleDotColor;
+  final Color noteDotColor;
 
   const CalendarWidget({
     super.key,
@@ -17,6 +29,18 @@ class CalendarWidget extends StatefulWidget {
     this.daysWithNotes = const [],
     this.schedulesByDay = const {},
     this.notesByDay = const {},
+    this.monthTextColor = Colors.white,
+    this.navigationIconColor = Colors.white,
+    this.weekdayTextColor = Colors.white,
+    this.weekendTextColor = Colors.red,
+    this.dayTextColor = Colors.white,
+    this.mutedDayTextColor = const Color(0xFF616161),
+    this.selectedDayColor = const Color(0xFF7C5FDD),
+    this.selectedDayTextColor = Colors.white,
+    this.todayFillColor,
+    this.todayBorderColor,
+    this.scheduleDotColor = const Color(0xFFB5A957),
+    this.noteDotColor = const Color(0xFF7C5FDD),
   });
 
   @override
@@ -73,6 +97,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         DateTime(_displayedMonth.year, _displayedMonth.month + 1, 0).day;
     final firstDayWeekday =
         DateTime(_displayedMonth.year, _displayedMonth.month, 1).weekday;
+    final todayFillColor = widget.todayFillColor ??
+        widget.selectedDayColor.withValues(alpha: 0.25);
+    final todayBorderColor = widget.todayBorderColor ??
+        widget.selectedDayColor.withValues(alpha: 0.5);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -82,7 +110,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton(
-              icon: const Icon(Icons.chevron_left, color: Colors.white),
+              icon: Icon(Icons.chevron_left, color: widget.navigationIconColor),
               iconSize: 22,
               onPressed: _previousMonth,
               padding: EdgeInsets.zero,
@@ -92,8 +120,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               onTap: _todayMonth,
               child: Text(
                 monthYear,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: widget.monthTextColor,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.8,
@@ -101,7 +129,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.chevron_right, color: Colors.white),
+              icon:
+                  Icon(Icons.chevron_right, color: widget.navigationIconColor),
               iconSize: 22,
               onPressed: _nextMonth,
               padding: EdgeInsets.zero,
@@ -112,14 +141,44 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: const [
-            _WeekdayHeader('SUN', isWeekend: true),
-            _WeekdayHeader('MON'),
-            _WeekdayHeader('TUE'),
-            _WeekdayHeader('WED'),
-            _WeekdayHeader('THU'),
-            _WeekdayHeader('FRI'),
-            _WeekdayHeader('SAT', isWeekend: true),
+          children: [
+            _WeekdayHeader(
+              'SUN',
+              isWeekend: true,
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'MON',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'TUE',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'WED',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'THU',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'FRI',
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
+            _WeekdayHeader(
+              'SAT',
+              isWeekend: true,
+              weekdayTextColor: widget.weekdayTextColor,
+              weekendTextColor: widget.weekendTextColor,
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -185,13 +244,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isSelected
-                      ? const Color(0xFF7C5FDD)
-                      : (isToday
-                          ? const Color(0xFF7C5FDD).withValues(alpha: 0.25)
-                          : Colors.transparent),
+                      ? widget.selectedDayColor
+                      : (isToday ? todayFillColor : Colors.transparent),
                   border: isToday && !isSelected
                       ? Border.all(
-                          color: const Color(0xFF7C5FDD).withValues(alpha: 0.5),
+                          color: todayBorderColor,
                           width: 1.5,
                         )
                       : null,
@@ -206,8 +263,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       displayDay.toString(),
                       style: TextStyle(
                         color: !isCurrentMonth
-                            ? Colors.grey.shade700
-                            : (index % 7 == 0 ? Colors.red[300] : Colors.white),
+                            ? widget.mutedDayTextColor
+                            : (isSelected
+                                ? widget.selectedDayTextColor
+                                : (index % 7 == 0
+                                    ? widget.weekendTextColor
+                                    : widget.dayTextColor)),
                         fontSize: 13,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -226,8 +287,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                 height: 4,
                                 decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Color(0xFFB5A957),
-                                ),
+                                ).copyWith(color: widget.scheduleDotColor),
                               ),
                             if (hasSchedule && hasNotes)
                               const SizedBox(width: 2),
@@ -237,8 +297,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                 height: 4,
                                 decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Color(0xFF7C5FDD),
-                                ),
+                                ).copyWith(color: widget.noteDotColor),
                               ),
                           ],
                         ),
@@ -275,8 +334,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 class _WeekdayHeader extends StatelessWidget {
   final String label;
   final bool isWeekend;
+  final Color weekdayTextColor;
+  final Color weekendTextColor;
 
-  const _WeekdayHeader(this.label, {this.isWeekend = false});
+  const _WeekdayHeader(
+    this.label, {
+    this.isWeekend = false,
+    required this.weekdayTextColor,
+    required this.weekendTextColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +351,7 @@ class _WeekdayHeader extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isWeekend ? Colors.red : Colors.white,
+            color: isWeekend ? weekendTextColor : weekdayTextColor,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
